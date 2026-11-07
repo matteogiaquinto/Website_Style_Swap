@@ -199,24 +199,24 @@ def run_transfer(job_id, old_url, ref_url, api_key):
         pending = {'event': threading.Event(), 'approved': None}
         with jobs_lock:
             pending_confirmations[job_id] = pending
-            transfers[job_id].update(status='awaiting_approval', stage='Confirmation nécessaire',
+            transfers[job_id].update(status='awaiting_approval', stage='Confirmation required',
                                      confirmation={'characters': character_count, 'threshold': threshold})
         pending['event'].wait(CONFIRMATION_TIMEOUT_SECONDS)
         with jobs_lock:
             pending_confirmations.pop(job_id, None)
             approved = pending['approved']
         if approved is None:
-            raise TimeoutError('Confirmation expirée ; aucun contenu n’a été envoyé à Claude.')
+            raise TimeoutError('Confirmation expired; no content was sent to Claude.')
         if not approved:
-            raise GenerationCancelled('Génération annulée ; aucun contenu n’a été envoyé à Claude.')
+            raise GenerationCancelled('Generation cancelled; no content was sent to Claude.')
     try:
         report = build_transfer(old_url, ref_url, TRANSFER_DIR / job_id, progress, api_key=api_key,
                                 confirm_large_page=confirm_large_page)
         with jobs_lock:
-            transfers[job_id].update(status='finished', report=report, stage='Aperçu prêt', completed_steps=5)
+            transfers[job_id].update(status='finished', report=report, stage='Preview ready', completed_steps=5)
     except GenerationCancelled as exc:
         with jobs_lock:
-            transfers[job_id].update(status='cancelled', stage='Génération annulée', error=str(exc))
+            transfers[job_id].update(status='cancelled', stage='Generation cancelled', error=str(exc))
     except Exception as exc:
         with jobs_lock:
             message = str(exc).replace(api_key, '[redacted]') if api_key else str(exc)
@@ -268,23 +268,23 @@ def start_transfer():
     data = request.get_json(silent=True) or {}
     api_key = data.get('api_key', '')
     if not isinstance(api_key, str) or len(api_key) > 512:
-        return jsonify(error='Clé API invalide.'), 400
+        return jsonify(error='Invalid API key.'), 400
     api_key = api_key.strip() or os.environ.get('ANTHROPIC_API_KEY', '').strip()
     if not api_key:
-        return jsonify(error='Ajoutez votre clé API Claude pour lancer la génération.'), 400
+        return jsonify(error='Enter your Claude API key to start generation.'), 400
     urls = []
     for key in ('old_url', 'reference_url'):
         value = data.get(key, '')
-        if not isinstance(value, str): return jsonify(error='URL invalide.'), 400
+        if not isinstance(value, str): return jsonify(error='Invalid URL.'), 400
         value = value.strip()
         if value and '://' not in value: value = 'https://' + value
         parsed = urlparse(value)
         if parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username or parsed.password:
-            return jsonify(error='Saisissez deux URL HTTP ou HTTPS valides.'), 400
+            return jsonify(error='Enter two valid HTTP or HTTPS URLs.'), 400
         urls.append(value)
     job_id = uuid.uuid4().hex[:12]
     with jobs_lock:
-        transfers[job_id] = {'id':job_id, 'status':'running', 'stage':'Démarrage', 'completed_steps':0, 'total_steps':5, 'error':None}
+        transfers[job_id] = {'id':job_id, 'status':'running', 'stage':'Starting', 'completed_steps':0, 'total_steps':5, 'error':None}
     threading.Thread(target=run_transfer, args=(job_id, *urls, api_key), daemon=True).start()
     return jsonify(id=job_id, engine='claude-agent'), 202
 
@@ -293,15 +293,15 @@ def approve_transfer(job_id):
     if not re.fullmatch(r'[0-9a-f]{12}', job_id): abort(404)
     data = request.get_json(silent=True) or {}
     if not isinstance(data.get('approve'), bool):
-        return jsonify(error='Précisez si la génération doit continuer.'), 400
+        return jsonify(error='Specify whether generation should continue.'), 400
     with jobs_lock:
         job = transfers.get(job_id)
         pending = pending_confirmations.get(job_id)
         if not job or not pending or job['status'] != 'awaiting_approval':
-            return jsonify(error='Cette confirmation n’est plus active.'), 409
+            return jsonify(error='This confirmation is no longer active.'), 409
         pending['approved'] = data['approve']
         job['status'] = 'running' if data['approve'] else 'cancelled'
-        job['stage'] = 'Reprise de la génération' if data['approve'] else 'Génération annulée'
+        job['stage'] = 'Resuming generation' if data['approve'] else 'Generation cancelled'
         pending['event'].set()
     return jsonify(ok=True)
 
@@ -319,7 +319,7 @@ def transfer_status(job_id):
         report = json.loads((folder / 'design-report.json').read_text(encoding='utf-8'))
     except (OSError, ValueError):
         abort(404)
-    return jsonify(id=job_id, status='finished', stage='Aperçu prêt', completed_steps=5, total_steps=5, error=None, report=report)
+    return jsonify(id=job_id, status='finished', stage='Preview ready', completed_steps=5, total_steps=5, error=None, report=report)
 
 @app.get('/api/transfers/<job_id>/preview')
 def transfer_preview(job_id):

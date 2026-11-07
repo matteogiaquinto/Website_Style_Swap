@@ -138,20 +138,20 @@ def build(old_url, ref_url, folder: Path, progress):
         context=browser.new_context(viewport={'width':1440,'height':900}, user_agent=USER_AGENT, ignore_https_errors=False)
         page=context.new_page()
         def visit(url, name):
-            if not load_robots(url).can_fetch(USER_AGENT,url): raise ValueError(f'{name}: accès interdit par robots.txt')
+            if not load_robots(url).can_fetch(USER_AGENT,url): raise ValueError(f'{name}: access disallowed by robots.txt')
             try: response=page.goto(url,wait_until='domcontentloaded',timeout=45000)
-            except PlaywrightTimeout: raise ValueError(f'{name}: délai de chargement dépassé')
-            if not response or response.status >= 400: raise ValueError(f'{name}: réponse HTTP {response.status if response else "inconnue"}')
-            if 'html' not in response.headers.get('content-type','').lower(): raise ValueError(f'{name}: la réponse ne contient pas une page HTML')
+            except PlaywrightTimeout: raise ValueError(f'{name}: loading timed out')
+            if not response or response.status >= 400: raise ValueError(f'{name}: HTTP response {response.status if response else "unknown"}')
+            if 'html' not in response.headers.get('content-type','').lower(): raise ValueError(f'{name}: the response is not an HTML page')
             page.wait_for_timeout(1500)
             page.evaluate(SCROLL_JS)
             return page.url
-        progress('Lecture du contenu du site d’origine')
-        source_url=visit(old_url,'Site d’origine')
+        progress('Reading source website content')
+        source_url=visit(old_url,'Source website')
         page.screenshot(path=str(folder/'source.png'),full_page=True,timeout=30000)
         source=page.evaluate(SOURCE)
-        progress('Mesure du design de référence')
-        final_ref=visit(ref_url,'Site de référence')
+        progress('Measuring the reference design')
+        final_ref=visit(ref_url,'Reference website')
         data={}
         for width in VIEWPORTS:
             page.set_viewport_size({'width':width,'height':900})
@@ -159,13 +159,13 @@ def build(old_url, ref_url, folder: Path, progress):
             data[str(width)]=page.evaluate(EXTRACT,{'selectors':SELECTORS,'props':PROPS})
             page.screenshot(path=str(folder/f'reference-{width}.png'),full_page=True,timeout=30000)
         browser.close()
-    progress('Création de l’aperçu')
+    progress('Creating preview')
     structural, matches=structural_css(data,source['layouts'])
     css=generate_css(data['1440'],source['brand']) + structural
     head='<meta name="viewport" content="width=device-width, initial-scale=1"><style>'+css+'</style>'
     html=re.sub(r'<head(?:\s[^>]*)?>',lambda m:m.group(0)+head,source['html'],count=1,flags=re.I)
     if html==source['html']: html=head+html
     (folder/'index.html').write_text(html,encoding='utf-8')
-    report={'source_url':source_url,'reference_url':final_ref,'source_brand':source['brand'],'source_counts':source['counts'],'reference_measurements':data,'layout_matches':matches,'limitations':['Les structures sont associées par position de section et nombre de blocs : les associations complexes peuvent être inexactes.','Couleurs et familles de polices du site source conservées conformément à la spécification.','JavaScript et fonctionnalités interactives désactivés dans l’aperçu.','Les ressources distantes restent hébergées sur le site source.','La feuille CSS de référence et les animations ne sont pas transférées.']}
+    report={'source_url':source_url,'reference_url':final_ref,'source_brand':source['brand'],'source_counts':source['counts'],'reference_measurements':data,'layout_matches':matches,'limitations':['Structures are matched by section position and block count; complex matches may be inaccurate.','Source website colors and font families are preserved according to the specification.','JavaScript and interactive features are disabled in the preview.','Remote assets remain hosted on the source website.','The reference stylesheet and animations are not transferred.']}
     (folder/'design-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
     return report

@@ -1,16 +1,16 @@
 # Website Style Swap
 
-> **Prototype expérimental** : ce projet est une preuve de concept, pas un produit fini. Ses résultats peuvent être incomplets, inexacts ou inutilisables et doivent être vérifiés manuellement avant toute utilisation.
+> **Experimental prototype:** this is a proof of concept, not a finished product. Results may be incomplete, inaccurate, or unusable and must be reviewed before use.
 
-Website Style Swap explore le transfert du style visuel d’un site de référence vers le contenu d’un site source. Une application locale récupère la page source avec un crawler, observe la page de référence et demande à Claude de produire une spécification de design puis une nouvelle page HTML/CSS. L’interface permet de prévisualiser et télécharger le résultat et ses fichiers associés. Un crawler indépendant permet aussi d’explorer plusieurs pages et d’enregistrer leurs images.
+Website Style Swap explores applying the visual style of a reference website to the content of a source website. The local application crawls a source page, examines a reference page, and asks Claude to produce a design specification and a new HTML/CSS page. You can preview and download the result and supporting files. A separate crawler can explore multiple pages and save their images.
 
-## Prérequis et installation
+## Requirements and setup
 
-- Python 3.10 ou plus récent et une connexion Internet.
-- Un compte Anthropic, une **clé API Anthropic valide** et l’accès à un modèle compatible pour la génération. L’abonnement à Claude ne remplace pas nécessairement l’accès à l’API.
-- Chromium, installé par Playwright comme indiqué ci-dessous.
+- Python 3.10 or newer and an Internet connection.
+- An Anthropic account, a **valid Anthropic API key**, and access to a compatible model for generation. A Claude subscription does not necessarily include API access.
+- Chromium, installed by Playwright as shown below.
 
-Depuis la racine du dépôt :
+From the repository root, in PowerShell:
 
 ```powershell
 cd crawler-app/crawler-app
@@ -21,29 +21,29 @@ python -m playwright install chromium
 python app.py
 ```
 
-Sur macOS ou Linux, activez l’environnement avec `source .venv/bin/activate` au lieu de la commande PowerShell. Ouvrez ensuite <http://127.0.0.1:5050>. Saisissez l’URL du site source, celle du site de référence et votre clé API Anthropic, puis lancez la génération. La clé peut également être fournie via la variable d’environnement `ANTHROPIC_API_KEY` avant le lancement. Ne la publiez jamais dans le dépôt. Le modèle peut être configuré avec `ANTHROPIC_MODEL` ; le modèle par défaut indiqué dans le code doit être accessible à votre compte.
+On macOS or Linux, activate the environment with `source .venv/bin/activate` instead. Open <http://127.0.0.1:5050>, enter the source and reference URLs and your Anthropic API key, then start generation. Alternatively, set `ANTHROPIC_API_KEY` before starting the server. Never commit your key. Set `ANTHROPIC_MODEL` to select a model available to your account; the default model in the code must be available to you.
 
-Le crawler seul est accessible à <http://127.0.0.1:5050/crawler> et ne nécessite pas de clé Claude. Arrêtez le serveur avec `Ctrl+C`.
+The standalone crawler is available at <http://127.0.0.1:5050/crawler> and does not require a Claude API key. Stop the server with `Ctrl+C`.
 
-## Fonctionnement et fichiers
+## How it works
 
-1. Playwright visite la page source, enregistre son HTML et récupère les images disponibles.
-2. L’application examine la référence et prend des captures à plusieurs tailles.
-3. Claude analyse ces éléments selon `website_design_extraction_specification.md`, produit une spécification puis une page HTML/CSS, et tente une révision visuelle.
-4. L’interface présente un aperçu et permet de télécharger les résultats. Les fichiers sont enregistrés localement dans `crawler-app/crawler-app/transfers/` ; les crawls sont dans `crawls/`.
+1. Playwright visits the source page, saves its rendered HTML, and retrieves available images.
+2. The application examines the reference and takes screenshots at different sizes.
+3. Claude uses `website_design_extraction_specification.md` to produce a design specification and an HTML/CSS page, then attempts a visual review.
+4. The interface provides a preview and downloads. Results are stored locally in `crawler-app/crawler-app/transfers/` and crawls in `crawls/`.
 
-Le serveur Flask se trouve dans `app.py`, le crawler dans `crawler.py`, la génération Claude dans `ai_transfer.py` et l’interface dans `static/`. Le dossier `classy-eth-preview/` et `interface_front_end.html` contiennent des aperçus ou essais d’interface. Pour plus de détails, voir les README dans `crawler-app/crawler-app/`.
+The Flask server is in `app.py`, the crawler in `crawler.py`, Claude generation in `ai_transfer.py`, and the interface in `static/`. `classy-eth-preview/` and `interface_front_end.html` contain interface previews or experiments. See the READMEs in `crawler-app/crawler-app/` for more detail.
 
-## Coûts, données et limites
+## Costs, data, and limitations
 
-Les appels à l’API Anthropic peuvent être facturés sur votre compte et aucune limite de dépense n’est imposée par l’application. Le contenu source, des observations et des captures de la référence sont transmis à Anthropic : n’utilisez pas de données que vous ne souhaitez pas partager. Utilisez uniquement des sites et contenus pour lesquels vous disposez des autorisations nécessaires.
+Anthropic API calls may be billed to your account, and the application imposes no spending limit. Source content, observations, and reference screenshots are sent to Anthropic: do not use data you do not want to share. Only use websites and content you are authorized to access and use.
 
-La page générée est un brouillon : textes, images, liens, mise en page et accessibilité peuvent comporter des erreurs ou omissions. Les interactions complexes, formulaires et services externes ne sont pas nécessairement reproduits ; l’aperçu bloque les scripts de la page générée. Certains éléments du site peuvent être inaccessibles. L’application est destinée à un usage local et ne doit pas être exposée sur Internet telle quelle.
+The generated page is a draft: text, images, links, layout, and accessibility may contain errors or omissions. Complex interactions, forms, and external services may not be reproduced. The preview blocks scripts in the generated page, and some website resources may be inaccessible. The application is intended for local use and should not be exposed to the Internet as-is.
 
-## Responsabilité
+## Disclaimer
 
-Ce prototype est fourni **en l’état**, sans garantie de fonctionnement, de fiabilité, de sécurité ou d’adéquation à un usage particulier. Son utilisation, la vérification des résultats et le respect des droits et conditions applicables relèvent de l’utilisateur. Dans les limites permises par la loi applicable, les auteurs déclinent toute responsabilité pour les erreurs, pertes ou dommages directs ou indirects liés à son utilisation.
+This prototype is provided **as is**, without warranties of functionality, reliability, security, or fitness for a particular purpose. Users are responsible for reviewing results and complying with applicable rights and terms. To the extent permitted by applicable law, the authors disclaim liability for errors, losses, or direct or indirect damage arising from its use.
 
-## Test local
+## Local test
 
-Depuis `crawler-app/crawler-app`, `python test_transfer_smoke.py` exécute un test de la chaîne avec des réponses Claude simulées, sans appel API payant. Ce test ne garantit pas la qualité d’une génération réelle.
+From `crawler-app/crawler-app`, run `python test_transfer_smoke.py` to test the pipeline with simulated Claude responses and no paid API call. This does not guarantee the quality of a real generation.
