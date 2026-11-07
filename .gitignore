@@ -1,4 +1,4 @@
-# Environnements et fichiers locaux
+# Local environments and files
 **/.venv/
 **/.venv-win/
 **/.local-deps/
@@ -11,6 +11,8 @@
 __MACOSX/
 .DS_Store
 
-# Résultats locaux, potentiellement volumineux ou privés
+# Local results, potentially large or private
+crawls/
+transfers/
 crawler-app/crawler-app/crawls/
 crawler-app/crawler-app/transfers/

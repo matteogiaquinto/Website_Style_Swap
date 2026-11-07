@@ -10,10 +10,11 @@ Website Style Swap explores applying the visual style of a reference website to 
 - An Anthropic account, a **valid Anthropic API key**, and access to a compatible model for generation. A Claude subscription does not necessarily include API access.
 - Chromium, installed by Playwright as shown below.
 
+**Start the application with `app.py` from the repository root.** The app runs a local server; open its address in your browser rather than opening an HTML file directly.
+
 From the repository root, in PowerShell:
 
 ```powershell
-cd crawler-app/crawler-app
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
@@ -29,10 +30,19 @@ The standalone crawler is available at <http://127.0.0.1:5050/crawler> and does 
 
 1. Playwright visits the source page, saves its rendered HTML, and retrieves available images.
 2. The application examines the reference and takes screenshots at different sizes.
-3. Claude uses `website_design_extraction_specification.md` to produce a design specification and an HTML/CSS page, then attempts a visual review.
-4. The interface provides a preview and downloads. Results are stored locally in `crawler-app/crawler-app/transfers/` and crawls in `crawls/`.
+3. Claude uses `docs/website_design_extraction_specification.md` to produce a design specification and an HTML/CSS page, then attempts a visual review.
+4. The interface provides a preview and downloads. Results are stored locally in `transfers/` and crawls in `crawls/`.
 
-The Flask server is in `app.py`, the crawler in `crawler.py`, Claude generation in `ai_transfer.py`, and the interface in `static/`. `classy-eth-preview/` and `interface_front_end.html` contain interface previews or experiments. See the READMEs in `crawler-app/crawler-app/` for more detail.
+| Path | Purpose |
+| --- | --- |
+| `app.py` | **Start here:** local Flask application and server |
+| `requirements.txt` | Python dependencies |
+| `static/` | Application interface and assets |
+| `crawler.py`, `ai_transfer.py`, `transfer.py` | Crawler and generation code |
+| `docs/` | Additional documentation, design specification, and example previews |
+| `test_transfer_smoke.py` | Local smoke test with simulated Claude responses |
+
+See [crawler documentation](docs/CRAWLER.md) and [Restyle documentation](docs/RESTYLE.md) for more detail.
 
 ## Costs, data, and limitations
 
@@ -46,4 +56,4 @@ This prototype is provided **as is**, without warranties of functionality, relia
 
 ## Local test
 
-From `crawler-app/crawler-app`, run `python test_transfer_smoke.py` to test the pipeline with simulated Claude responses and no paid API call. This does not guarantee the quality of a real generation.
+From the repository root, run `python test_transfer_smoke.py` to test the pipeline with simulated Claude responses and no paid API call. This does not guarantee the quality of a real generation.

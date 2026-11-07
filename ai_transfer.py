@@ -10,7 +10,7 @@ from urllib import error, request
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 from crawler import crawl, load_robots, USER_AGENT, SCROLL_JS
 
-SPEC = Path(__file__).resolve().parents[2] / 'website_design_extraction_specification.md'
+SPEC = Path(__file__).resolve().parent / 'docs' / 'website_design_extraction_specification.md'
 MODEL_DEFAULT = 'claude-sonnet-5-5'
 _request_context = threading.local()
 LARGE_SOURCE_WARNING_CHARS = 500_000

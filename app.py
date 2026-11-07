@@ -242,7 +242,7 @@ def overlay_preview(html, download_url, trusted_scripts=False):
     resp.headers['X-Content-Type-Options'] = 'nosniff'
     return resp
 
-DEMO_PATH = BASE_DIR.resolve().parents[1] / 'classy-eth-preview' / 'index.html'
+DEMO_PATH = BASE_DIR.resolve() / 'docs' / 'classy-eth-preview' / 'index.html'
 
 @app.get('/simulation/preview')
 def simulation_preview():

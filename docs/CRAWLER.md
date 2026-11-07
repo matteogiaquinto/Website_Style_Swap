@@ -10,7 +10,6 @@ Only crawl sites you own or are allowed to crawl.
 You need Python 3.10 or newer.
 
 ```bash
-cd crawler-app
 python -m venv .venv
 
 # macOS / Linux

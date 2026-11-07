@@ -1,10 +1,10 @@
 # Restyle — Claude prototype
 
-Restyle uses the crawler to retrieve a source page, then Claude to examine a reference page, produce a Markdown design report based on `website_design_extraction_specification.md`, and generate a new HTML/CSS page.
+Restyle uses the crawler to retrieve a source page, then Claude to examine a reference page, produce a Markdown design report based on `docs/website_design_extraction_specification.md`, and generate a new HTML/CSS page.
 
 ## Setup and use
 
-See the [root README](../../README.md) for prerequisites and installation. Run `python app.py` in this directory and open <http://127.0.0.1:5050>. Enter both URLs and an Anthropic API key, or set `ANTHROPIC_API_KEY` before starting the server. The key entered in the form is passed to the local server, kept in memory during the job, and excluded from result files and job status. The field is cleared after the job starts. Use `ANTHROPIC_MODEL` to select a model available to your account. The standalone crawler is at <http://127.0.0.1:5050/crawler>.
+See the [root README](../README.md) for prerequisites and installation. Run `python app.py` from the repository root and open <http://127.0.0.1:5050>. Enter both URLs and an Anthropic API key, or set `ANTHROPIC_API_KEY` before starting the server. The key entered in the form is passed to the local server, kept in memory during the job, and excluded from result files and job status. The field is cleared after the job starts. Use `ANTHROPIC_MODEL` to select a model available to your account. The standalone crawler is at <http://127.0.0.1:5050/crawler>.
 
 ## Pipeline
 
