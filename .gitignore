@@ -1,0 +1,16 @@
+# Environnements et fichiers locaux
+**/.venv/
+**/.venv-win/
+**/.local-deps/
+**/__pycache__/
+*.py[cod]
+.env
+.env.*
+**/.env
+**/.env.*
+__MACOSX/
+.DS_Store
+
+# Résultats locaux, potentiellement volumineux ou privés
+crawler-app/crawler-app/crawls/
+crawler-app/crawler-app/transfers/

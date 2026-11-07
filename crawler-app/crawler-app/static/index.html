@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site Crawler</title>
+<style>
+  :root {
+    --bg: #f6f5f2; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6a66;
+    --line: #e2e0da; --accent: #2f5d50; --accent-text: #fff;
+    --ok: #2f7d4f; --err: #b3412f; --warn: #a06a12;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161615; --panel: #1f1f1d; --text: #ecebe6; --muted: #9b9a94;
+      --line: #33322f; --accent: #6fb39c; --accent-text: #0e1513;
+      --ok: #6fc28e; --err: #e57a66; --warn: #d9a54a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+         background: var(--bg); color: var(--text); }
+  header { padding: 20px 24px 8px; }
+  h1 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+  form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; padding: 12px 24px 16px; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+  input { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+          background: var(--panel); color: var(--text); }
+  input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .url { flex: 1 1 320px; } .url input { width: 100%; }
+  .small input { width: 90px; }
+  label.check { flex-direction: row; align-items: center; gap: 6px; font-size: 14px; color: var(--text); padding-bottom: 9px; }
+  label.check input { width: 16px; height: 16px; accent-color: var(--accent); }
+  button { font: inherit; padding: 8px 16px; border-radius: 6px; border: 1px solid transparent;
+           cursor: pointer; background: var(--accent); color: var(--accent-text); font-weight: 600; }
+  button.secondary { background: transparent; color: var(--text); border-color: var(--line); font-weight: 500; }
+  button:disabled { opacity: .45; cursor: default; }
+
+  .status { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; padding: 0 24px 12px; font-size: 14px; }
+  .bar { flex: 1 1 200px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .bar > div { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  .msg-err { color: var(--err); }
+
+  main { display: grid; grid-template-columns: minmax(260px, 380px) 1fr; gap: 0;
+         border-top: 1px solid var(--line); height: calc(100vh - 190px); min-height: 400px; }
+  #list { overflow-y: auto; border-right: 1px solid var(--line); margin: 0; padding: 0; list-style: none; }
+  #list li { padding: 10px 16px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  #list li:hover { background: var(--panel); }
+  #list li.active { background: var(--panel); box-shadow: inset 3px 0 0 var(--accent); }
+  .t { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .u { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .meta { font-size: 12px; margin-top: 2px; color: var(--muted); }
+  .code-ok { color: var(--ok); } .code-err { color: var(--err); }
+
+  #detail { display: flex; flex-direction: column; min-width: 0; }
+  .tabs { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+  .tabs button { padding: 4px 12px; font-size: 13px; }
+  .tabs button.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+  #frame { flex: 1; border: 0; background: #fff; width: 100%; }
+  #info { flex: 1; overflow: auto; padding: 16px; font-size: 13px; display: none; }
+  #info h3 { font-size: 13px; margin: 16px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  #info h3:first-child { margin-top: 0; }
+  #info ul { margin: 0; padding-left: 18px; word-break: break-all; }
+  .empty { color: var(--muted); padding: 40px 24px; text-align: center; }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .gallery figure { margin: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--panel); }
+  .gallery a.thumb { display: flex; align-items: center; justify-content: center; height: 110px;
+                     background: repeating-conic-gradient(var(--line) 0 25%, transparent 0 50%) 0 0 / 14px 14px; }
+  .gallery img { max-width: 100%; max-height: 110px; object-fit: contain; }
+  .gallery figcaption { padding: 6px 8px; font-size: 11px; color: var(--muted); word-break: break-all; }
+  .gallery figcaption b { display: block; color: var(--text); font-weight: 500; }
+  .gallery .missing { color: var(--err); font-size: 12px; padding: 8px; text-align: center; }
+
+  @media (max-width: 720px) {
+    header, form, .status { padding-left: 16px; padding-right: 16px; }
+    main { grid-template-columns: 1fr; height: auto; }
+    #list { max-height: 280px; border-right: 0; border-bottom: 1px solid var(--line); }
+    #detail { height: 70vh; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Site Crawler</h1>
+  <p>Enter a website you own or are allowed to crawl. Pages are rendered in a headless browser and saved locally.</p>
+</header>
+
+<form id="form">
+  <label class="url">Start URL
+    <input id="url" type="text" placeholder="https://example.com" required autocomplete="off">
+  </label>
+  <label class="small">Max pages
+    <input id="max" type="number" min="1" max="200" value="20">
+  </label>
+  <label class="small">Delay (s)
+    <input id="delay" type="number" min="0" max="10" step="0.1" value="1">
+  </label>
+  <label class="check"><input id="imgs" type="checkbox" checked> Download images</label>
+  <button id="start" type="submit">Crawl</button>
+  <button id="stop" type="button" class="secondary" disabled>Stop</button>
+  <button id="dl" type="button" class="secondary" disabled>Download .zip</button>
+</form>
+
+<div class="status">
+  <span id="statusText">Idle</span>
+  <div class="bar"><div id="barFill"></div></div>
+</div>
+
+<main>
+  <ul id="list"><li class="empty" style="cursor:default">No pages yet.</li></ul>
+  <section id="detail">
+    <div class="tabs">
+      <button type="button" class="secondary on" data-tab="preview">Preview</button>
+      <button type="button" class="secondary" data-tab="info">Links &amp; images</button>
+    </div>
+    <iframe id="frame" sandbox="allow-same-origin" title="Page preview"></iframe>
+    <div id="info"></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let jobId = null, timer = null, selected = null, pages = [], tab = "preview";
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  clearInterval(timer);
+  pages = []; selected = null;
+  $("frame").removeAttribute("src"); $("info").innerHTML = "";
+  renderList();
+  setStatus("Starting…");
+  $("start").disabled = true;
+
+  const res = await fetch("/api/crawl", {
+    method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ url: $("url").value, max_pages: +$("max").value, delay: +$("delay").value,
+                           download_images: $("imgs").checked }),
+  });
+  const data = await res.json();
+  if (!res.ok) { setStatus(data.error || "Could not start crawl", true); $("start").disabled = false; return; }
+
+  jobId = data.id;
+  $("stop").disabled = false; $("dl").disabled = true;
+  poll(); timer = setInterval(poll, 1000);
+});
+
+$("stop").addEventListener("click", async () => {
+  if (!jobId) return;
+  $("stop").disabled = true;
+  setStatus("Stopping after current page…");
+  await fetch(`/api/jobs/${jobId}/stop`, { method: "POST" });
+});
+
+$("dl").addEventListener("click", () => { if (jobId) location.href = `/api/jobs/${jobId}/download`; });
+
+async function poll() {
+  const res = await fetch(`/api/jobs/${jobId}`);
+  if (!res.ok) return;
+  const job = await res.json();
+  pages = job.pages;
+  renderList();
+  $("barFill").style.width = `${Math.round(100 * job.done / job.max_pages)}%`;
+
+  const imgCount = new Set(pages.flatMap(p => Object.values(p.image_files || {}))).size;
+  const imgText = imgCount ? ` · ${imgCount} images saved` : "";
+
+  if (job.status === "running") {
+    setStatus(`Crawling… ${job.done} / ${job.max_pages} pages${imgText}`);
+    if (selected === null && pages.length) select(0);
+    return;
+  }
+  clearInterval(timer);
+  $("start").disabled = false; $("stop").disabled = true; $("dl").disabled = false;
+  const failed = pages.filter(p => p.error).length;
+  if (job.status === "error") setStatus(`Error: ${job.error}`, true);
+  else {
+    $("barFill").style.width = "100%";
+    setStatus(`${job.status === "stopped" ? "Stopped" : "Finished"}: ${pages.length - failed} saved, ${failed} failed or skipped${imgText}`);
+  }
+  if (selected === null && pages.length) select(0);
+}
+
+function setStatus(text, isErr = false) {
+  $("statusText").textContent = text;
+  $("statusText").className = isErr ? "msg-err" : "";
+}
+
+function renderList() {
+  if (!pages.length) { $("list").innerHTML = '<li class="empty" style="cursor:default">No pages yet.</li>'; return; }
+  $("list").innerHTML = pages.map((p, i) => {
+    const ok = p.status && p.status < 400 && !p.error;
+    const code = p.error ? esc(p.error) : `HTTP ${p.status ?? "?"}`;
+    return `<li data-i="${i}" class="${i === selected ? "active" : ""}">
+      <div class="t">${esc(p.title || "(no title)")}</div>
+      <div class="u">${esc(p.url)}</div>
+      <div class="meta"><span class="${ok ? "code-ok" : "code-err"}">${code}</span>
+        · ${p.links.length} links · ${imageSummary(p)}</div></li>`;
+  }).join("");
+}
+
+$("list").addEventListener("click", (e) => {
+  const li = e.target.closest("li[data-i]");
+  if (li) select(+li.dataset.i);
+});
+
+function select(i) {
+  selected = i; renderList();
+  const p = pages[i];
+  if (p.file) $("frame").src = `/api/jobs/${jobId}/page/${i}`;
+  else $("frame").srcdoc = `<p style="font:14px system-ui;padding:20px;color:#666">No saved HTML for this page (${esc(p.error || "not HTML")}).</p>`;
+  $("info").innerHTML = `
+    <h3>URL</h3><ul><li>${esc(p.url)}</li></ul>
+    <h3>Internal links (${p.links.length})</h3><ul>${p.links.map(l => `<li>${esc(l)}</li>`).join("") || "<li>None</li>"}</ul>
+    <h3>Images (${imageSummary(p)})</h3>${gallery(p)}`;
+}
+
+function imageSummary(p) {
+  const saved = Object.keys(p.image_files || {}).length;
+  return saved ? `${p.images.length} images, ${saved} saved` : `${p.images.length} images`;
+}
+
+function gallery(p) {
+  if (!p.images.length) return "<ul><li>None</li></ul>";
+  const files = p.image_files || {};
+  return `<div class="gallery">${p.images.map(url => {
+    const file = files[url];
+    const name = decodeURIComponent(url.split("?")[0].split("/").pop() || url);
+    const src = file ? `/api/jobs/${jobId}/files/${file.split("/").map(encodeURIComponent).join("/")}` : null;
+    return `<figure>
+      ${src ? `<a class="thumb" href="${esc(src)}" target="_blank" rel="noopener"><img src="${esc(src)}" alt="" loading="lazy"></a>`
+            : `<div class="thumb missing">not downloaded</div>`}
+      <figcaption><b>${esc(name)}</b><a href="${esc(url)}" target="_blank" rel="noopener noreferrer">original</a></figcaption>
+    </figure>`;
+  }).join("")}</div>`;
+}
+
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+  tab = b.dataset.tab;
+  document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
+  $("frame").style.display = tab === "preview" ? "" : "none";
+  $("info").style.display = tab === "info" ? "block" : "none";
+}));
+</script>
+</body>
+</html>

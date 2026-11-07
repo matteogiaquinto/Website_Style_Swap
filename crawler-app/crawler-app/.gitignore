@@ -1,0 +1,4 @@
+.venv-win/
+.local-deps/
+transfers/
+__pycache__/
