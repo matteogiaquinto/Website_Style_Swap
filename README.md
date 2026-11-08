@@ -2,7 +2,11 @@
 
 > **Experimental prototype:** this is a proof of concept, not a finished product. Results may be incomplete, inaccurate, or unusable and must be reviewed before use.
 
-Website Style Swap explores applying the visual style of a reference website to the content of a source website. The local application crawls a source page, examines a reference page, and asks Claude to produce a design specification and a new HTML/CSS page. You can preview and download the result and supporting files. A separate crawler can explore multiple pages and save their images.
+Give your content a fresh look inspired by a website you love. Website Style Swap is a local experiment that brings together the content of one page and the visual direction of another, with help from Claude.
+
+![Restyle interface showing fields for a source website, a design reference, and an Anthropic API key](docs/restyle-preview.png)
+
+**Pick a source. Choose a reference. Explore the result.** The app captures the source page, studies the reference design, and generates an HTML/CSS draft you can preview and download. There is also a free, pre-generated demo to try without an API key, plus a standalone crawler for exploring multiple pages.
 
 ## Requirements and setup
 
