@@ -8,25 +8,62 @@ Give your content a fresh look inspired by a website you love. Website Style Swa
 
 **Pick a source. Choose a reference. Explore the result.** The app captures the source page, studies the reference design, and generates an HTML/CSS draft you can preview and download. There is also a free, pre-generated demo to try without an API key, plus a standalone crawler for exploring multiple pages.
 
-## Requirements and setup
+Built during [TRY & 2026](https://luma.com/tryand), an event hosted by ETH Student Project House and Oday Darwich in Zürich on 6–7 November 2026.
 
-- Python 3.10 or newer and an Internet connection.
-- An Anthropic account, a **valid Anthropic API key**, and access to a compatible model for generation. A Claude subscription does not necessarily include API access.
-- Chromium, installed by Playwright as shown below.
+## Get started
 
-**Start the application with `app.py` from the repository root.** The app runs a local server; open its address in your browser rather than opening an HTML file directly.
+You do not need a GitHub account or an API key to try the pre-generated demo. You do need a computer with an Internet connection and Python. Setup involves copying a few commands into a terminal; the app itself then opens in your web browser.
 
-From the repository root, in PowerShell:
+### 1. Download the project
+
+1. At the top of this GitHub page, click the green **Code** button, then **Download ZIP**.
+2. Find the downloaded ZIP file and extract it: on Windows, right-click it and choose **Extract All**; on macOS, double-click it.
+3. Open the extracted `Website_Style_Swap-main` folder. It should contain `app.py` and `requirements.txt`. Keep the files together.
+
+### 2. Install Python
+
+Install [Python](https://www.python.org/downloads/) version 3.10 or newer if you do not already have it. On Windows, select **Add Python to PATH** if offered during installation. Close and reopen your terminal after installing it.
+
+### 3. Open a terminal in the project folder
+
+- **Windows:** in File Explorer, open the extracted folder, click the address bar, type `powershell`, and press Enter.
+- **macOS:** open Terminal, type `cd` followed by a space, drag the extracted folder into the Terminal window, and press Enter.
+- **Linux:** open a terminal in the extracted folder, for example by using your file manager's **Open in Terminal** option.
+
+The terminal is a window where you can paste commands. Run the commands below one line at a time, pressing Enter after each and waiting for it to finish. The downloads may take a few minutes.
+
+### 4. Install and start the app
+
+**Windows (PowerShell):**
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python -m playwright install chromium
-python app.py
+py -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m playwright install chromium
+.\.venv\Scripts\python.exe app.py
 ```
 
-On macOS or Linux, activate the environment with `source .venv/bin/activate` instead. Open <http://127.0.0.1:5050>, enter the source and reference URLs and your Anthropic API key, then start generation. Alternatively, set `ANTHROPIC_API_KEY` before starting the server. Never commit your key. Set `ANTHROPIC_MODEL` to select a model available to your account; the default model in the code must be available to you.
+**macOS / Linux:**
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m playwright install chromium
+.venv/bin/python app.py
+```
+
+After the final command, leave the terminal window open. Open <http://127.0.0.1:5050> in your browser. This address points to the app running on your own computer; it is not a public website. Do not open an HTML file directly.
+
+### 5. Try the demo or create a draft
+
+- **Try the demo:** select **Try the demo**, then **Free demo · Classy × ETH**. This displays a pre-generated example without an API key or paid AI calls.
+- **Create a draft:** enter the URL of your source website and the URL of a design reference, then enter a valid **Anthropic API key** and click the arrow. You need an Anthropic API account and access to a compatible model. A Claude subscription does not necessarily include API access. API calls can be billed to your account; review the costs and data information below before generating.
+
+You can preview and download the result when it is ready. To stop the app, return to the terminal and press **Ctrl+C**. To use it again later, reopen a terminal in the extracted folder and run only the final command from step 4.
+
+If the page does not open, check that the terminal is still running and that you used `http://127.0.0.1:5050`. If a different or older local server is already using that address, stop it before starting this app. If a command fails, check that Python is installed and that the terminal is open in the folder containing `app.py`.
+
+For advanced setup, the key can instead be set in the `ANTHROPIC_API_KEY` environment variable before starting the server. Never commit your key. Set `ANTHROPIC_MODEL` to select a model available to your account; the default model in the code must be available to you.
 
 The standalone crawler is available at <http://127.0.0.1:5050/crawler> and does not require a Claude API key. Stop the server with `Ctrl+C`.
 
